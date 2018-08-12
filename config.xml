@@ -8,6 +8,8 @@
 <!-- versionCode is optional and Android only -->
 
   <name>MailApp</name>
+    
+    <preference name="android-minSdkVersion" value="26" />
 
   <description>
       Meine MailApp
