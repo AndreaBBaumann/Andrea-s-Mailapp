@@ -1,2 +1,2 @@
 # Andrea-s-Mailapp
-Mail App
+Einfach Emails versenden
