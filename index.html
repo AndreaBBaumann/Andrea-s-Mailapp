@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Andrea's Mailapp</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+    <link rel="stylesheet" href="app.min.css">
+    <style>
+        
+       
+
+    </style>
+  </head>
+
+  <body>
+    <div class="app-page" data-page="home">
+      <div class="app-topbar">
+        <div class="app-title">Email versenden</div>
+      </div>
+      <div class="app-content">
+          
+        <p class="app-section">
+            Klicke unten um eine Email zu versenden.
+        </p>
+          
+        <div class="app-section" id="recipients_list">
+          <div class="app-button" ></div>
+        </div>
+
+        <div class="app-section">
+          <div class="app-button" data-target="sendemail">Sende an neuen Nutzer</div>
+        </div>
+          
+      </div>
+    </div>
+
+    <div class="app-page" data-page="sendemail">
+      <div class="app-topbar">
+        <div class="app-button right" id="back" data-target="home">Zurück</div>
+        <div class="app-title">Email senden</div>
+      </div>
+      <div class="app-content">
+        
+        <form>
+            
+            <div class="app-section" id="message1">
+            </div>
+            
+            <div class="app-section">
+                Von:
+                <input class="app-input" name="email_sender" id="email_sender" placeholder="Email Sender">
+            </div>
+            <div class="app-section">
+                An:
+                <input class="app-input" name="email_recipient" id="email_recipient" placeholder="Email Empfänger">
+            </div>
+
+            <div class="app-section">
+                <input class="app-input" name="subject" id="subject" placeholder="Betreff">
+                <textarea class="app-input" name="message" id="message" placeholder="Nachricht"></textarea>
+                <div class="app-button green app-submit">Email senden</div>
+            </div>
+            
+        </form>
+          
+      </div>
+    </div>
+      
+    
+
+    <script src="zepto.js"></script>
+    <script src="app.min.js"></script>
+    <script>
+                
+        if(typeof(Storage) !== "undefined"){
+            
+            if(localStorage.getItem("email_sender") !== ""){
+                $("#email_sender").val(localStorage.getItem("email_sender")) ;
+            }
+            
+            var recipients = [];
+            var storedRecipients = JSON.parse(localStorage.getItem("recipients"));
+            
+            if(storedRecipients != null){
+                var anzahlEintaege = storedRecipients.length;
+                var recipient_string = "";
+                                
+                for(i=0; i < anzahlEintaege; i++){
+                    recipient_string += '<div class="app-button" data-target="sendemail" id="recipient">' + storedRecipients[i] + '</div>';
+                    
+                    $("#recipients_list").html('test');
+                }
+                
+                if(recipient_string != ""){
+                    $("#recipients_list").html(recipient_string);
+                }
+                
+            }
+
+        }else{
+            alert("Bitte aktualisiere deinen Browser");
+        }
+        
+        
+        
+        App.controller('home', function (page) {
+            
+            $(page).find('#recipient')
+                    .on('click', function () {
+                $("#email_recipient").val($(this).html());
+            });
+            
+        });
+        
+        App.controller('sendemail', function (page) {
+            
+            $(page).find("#message1").hide();
+            
+            $(page).find('#back')
+                    .on('click', function(){
+                
+                if(typeof(Storage) !== "undefined"){
+                    var storedRecipients = JSON.parse(localStorage.getItem("recipients"));
+                    if(storedRecipients != null){
+
+                        var anzahlEintaege = storedRecipients.length;
+                        var recipient_string = "";
+
+                        for(i=0; i < anzahlEintaege; i++){
+
+                            recipient_string += '<div class="app-button" data-target="sendemail" id="recipient">' + storedRecipients[i] + '</div>';
+
+                            $("#recipients_list").html('test');
+                        }
+
+                        if(recipient_string != ""){
+                            $("#recipients_list").html(recipient_string);
+                        }
+                    }
+                }
+
+            });
+                        
+            $(page).find('.app-submit')
+                    .on('click', function () {
+                
+                var error = "";
+                                                   
+                if($("#email_sender").val() == ""){
+                    error += "Absender Emailadresse fehlt.";
+                }else{
+                    if(typeof(Storage) !== "undefined"){
+            
+                        localStorage.setItem("email_sender", $("#email_sender").val());
+
+                    }else{
+
+                        alert("Bitte aktualisiere deinen Browser");
+                    }
+                }
+                
+                if($("#email_recipient").val() == ""){
+                    error += "Empfänger Emailadresse fehlt.";
+                }else{
+
+                    var storedRecipients = JSON.parse(localStorage.getItem("recipients"));
+                    
+                    if(storedRecipients != null){
+                        var anzahlEintaege = storedRecipients.length;
+                        var names = [];
+                        
+                        for(i=0;i < anzahlEintaege; i++){
+                            names[i] = storedRecipients[i];
+                        }
+                        
+
+                        if($.inArray( $("#email_recipient").val(), storedRecipients ) == -1){
+                            
+                            names[anzahlEintaege] = $("#email_recipient").val();
+                            localStorage.setItem("recipients", JSON.stringify(names));
+ 
+                        }
+
+                    }else{
+                        var names = [];
+                        names[0] = $("#email_recipient").val();
+                        localStorage.setItem("recipients", JSON.stringify(names));
+                    }
+                    
+                }
+                
+                if($("#subject").val() == ""){
+                    error += "Betreff fehlt.";
+                }
+                
+                if($("#message").val() == ""){
+                    error += "Nachricht fehlt.";
+                }
+                    
+                if(error !== ""){
+                    App.dialog({
+                            title        : 'Fehler',
+                            text         : error,
+                            okButton     : 'ok'
+                        }, function (choice) {
+                            console.log(choice);
+                        });
+                }else{
+                    $.ajax({
+                    type: 'GET',
+                    url: 'sendmail.php?callback=response',
+                    // data to be added to query string:
+                    data: { to: $("#email_recipient").val(), from: $("#email_sender").val(), subject: $("#subject").val(), message: $("#message").val() },
+                    // type of data we are expecting in return:
+                    dataType: 'jsonp',
+                    timeout: 300,
+                    context: $('body'),
+                    success: function(data){
+
+                      if(data.success == true){
+                          $(page).find("#message1").html("Deine Email wurde erfolgreich versandt").show();
+                      }else{
+                          $(page).find("#message1").html("Deine Email konnte nicht versendet werden").show();
+                      }
+
+                    },
+                    error: function(xhr, type){
+                    $(page).find("#message1").html("Deine Email konnte nicht versendet werden").show();
+                    }
+                    })
+  
+                }
+
+            });
+            
+        });
+        
+        
+
+      try {
+        App.restore();
+      } catch (err) {
+        App.load('home');
+      }
+    </script>
+  </body>
+</html>
