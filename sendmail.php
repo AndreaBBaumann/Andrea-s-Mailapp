@@ -11,6 +11,7 @@
 
     $result['success'] = mail($to, $subject, $message, $headers);
 
+//$result['success'] = 1;
     if(array_key_exists('callback', $_GET)){
 
         header('Content-Type: text/javascript; charset=utf8');

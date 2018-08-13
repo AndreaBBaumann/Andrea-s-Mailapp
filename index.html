@@ -206,9 +206,10 @@
                             console.log(choice);
                         });
                 }else{
+                    
                     $.ajax({
                     type: 'GET',
-                    url: 'sendmail.php?callback=response',
+                    url: 'https://www.dance-shop.ch/apps/mailapp/sendmail.php?callback=response',
                     // data to be added to query string:
                     data: { to: $("#email_recipient").val(), from: $("#email_sender").val(), subject: $("#subject").val(), message: $("#message").val() },
                     // type of data we are expecting in return:
